@@ -1,0 +1,673 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ORACULUM - Ancient AI</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Cinzel', serif;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #fef3c7 0%, #fed7aa 50%, #fef3c7 100%);
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        .bg-pattern {
+            position: absolute;
+            inset: 0;
+            opacity: 0.05;
+            background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M30 0l30 30-30 30L0 30z' fill='%23000'/%3E%3C/svg%3E");
+            background-size: 60px 60px;
+            pointer-events: none;
+        }
+
+        .border-top, .border-bottom {
+            position: fixed;
+            left: 0;
+            right: 0;
+            height: 32px;
+            background: linear-gradient(90deg, #92400e 0%, #a16207 50%, #92400e 100%);
+            z-index: 100;
+        }
+
+        .border-top { top: 0; }
+        .border-bottom { bottom: 0; }
+
+        .container {
+            position: relative;
+            z-index: 10;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 80px 20px 80px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 60px;
+        }
+
+        .icon-sparkle {
+            width: 64px;
+            height: 64px;
+            margin: 0 auto 20px;
+            color: #92400e;
+        }
+
+        h1 {
+            font-size: 4rem;
+            font-weight: 900;
+            color: #78350f;
+            margin-bottom: 16px;
+            letter-spacing: 4px;
+        }
+
+        .subtitle {
+            font-size: 1.5rem;
+            color: #92400e;
+            margin-bottom: 16px;
+        }
+
+        .tagline {
+            color: #b45309;
+            font-size: 0.875rem;
+        }
+
+        .main-content {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(10px);
+            border-radius: 12px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            border: 4px solid #92400e;
+            padding: 40px;
+            margin-bottom: 40px;
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .card-header svg {
+            width: 24px;
+            height: 24px;
+            color: #92400e;
+        }
+
+        .card-title {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: #78350f;
+        }
+
+        textarea {
+            width: 100%;
+            height: 160px;
+            padding: 16px;
+            border: 2px solid #fcd34d;
+            border-radius: 8px;
+            background: rgba(254, 243, 199, 0.5);
+            font-family: 'Cinzel', serif;
+            font-size: 1rem;
+            color: #78350f;
+            resize: none;
+            transition: all 0.3s;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: #92400e;
+            box-shadow: 0 0 0 3px rgba(251, 191, 36, 0.3);
+        }
+
+        textarea::placeholder {
+            color: #b45309;
+            opacity: 0.6;
+        }
+
+        .char-count {
+            text-align: right;
+            margin-top: 8px;
+            font-size: 0.875rem;
+            color: #b45309;
+        }
+
+        .drop-zone {
+            border: 4px dashed #fcd34d;
+            border-radius: 12px;
+            padding: 60px 20px;
+            text-align: center;
+            background: rgba(254, 243, 199, 0.3);
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        .drop-zone:hover {
+            border-color: #f59e0b;
+            background: rgba(254, 243, 199, 0.5);
+        }
+
+        .drop-zone.dragging {
+            border-color: #92400e;
+            background: rgba(252, 211, 77, 0.5);
+            transform: scale(1.02);
+        }
+
+        .upload-icon {
+            width: 64px;
+            height: 64px;
+            margin: 0 auto 16px;
+            color: #f59e0b;
+        }
+
+        .drop-zone.dragging .upload-icon {
+            color: #92400e;
+        }
+
+        .drop-text {
+            font-size: 1.25rem;
+            color: #92400e;
+            margin-bottom: 8px;
+        }
+
+        .drop-subtext {
+            font-size: 0.875rem;
+            color: #b45309;
+            margin-bottom: 16px;
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        .btn-upload {
+            display: inline-block;
+            padding: 12px 24px;
+            background: linear-gradient(90deg, #92400e 0%, #a16207 100%);
+            color: white;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+            border: none;
+            font-family: 'Cinzel', serif;
+            font-size: 1rem;
+        }
+
+        .btn-upload:hover {
+            background: linear-gradient(90deg, #78350f 0%, #92400e 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3);
+        }
+
+        .image-grid {
+            margin-top: 40px;
+        }
+
+        .image-grid-title {
+            font-size: 1.125rem;
+            font-weight: 700;
+            color: #78350f;
+            margin-bottom: 16px;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 16px;
+        }
+
+        .image-item {
+            position: relative;
+            border-radius: 8px;
+            overflow: hidden;
+            border: 2px solid #fcd34d;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.2);
+        }
+
+        .image-item img {
+            width: 100%;
+            height: 160px;
+            object-fit: cover;
+            display: block;
+        }
+
+        .image-remove {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            width: 28px;
+            height: 28px;
+            background: #dc2626;
+            border: none;
+            border-radius: 50%;
+            color: white;
+            cursor: pointer;
+            opacity: 0;
+            transition: opacity 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+        }
+
+        .image-item:hover .image-remove {
+            opacity: 1;
+        }
+
+        .image-remove:hover {
+            background: #b91c1c;
+        }
+
+        .image-name {
+            padding: 8px;
+            font-size: 0.75rem;
+            color: #92400e;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            background: rgba(254, 243, 199, 0.5);
+        }
+
+        .submit-section {
+            text-align: center;
+            margin-top: 40px;
+            margin-bottom: 60px;
+        }
+
+        .btn-submit {
+            padding: 16px 48px;
+            background: linear-gradient(90deg, #92400e 0%, #a16207 50%, #92400e 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-family: 'Cinzel', serif;
+            font-size: 1.25rem;
+            cursor: pointer;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .btn-submit:hover:not(:disabled) {
+            transform: scale(1.05);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.4);
+        }
+
+        .btn-submit:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .response-card {
+            margin-top: 60px;
+            animation: slideUp 0.5s ease-out;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .response-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+
+        .response-header svg {
+            width: 28px;
+            height: 28px;
+            color: #92400e;
+        }
+
+        .response-title {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: #78350f;
+        }
+
+        .response-content {
+            background: rgba(254, 243, 199, 0.3);
+            padding: 24px;
+            border-radius: 8px;
+            border-left: 4px solid #f59e0b;
+            white-space: pre-wrap;
+            font-size: 1rem;
+            line-height: 1.8;
+            color: #78350f;
+            max-height: 600px;
+            overflow-y: auto;
+        }
+
+        .loading-container {
+            text-align: center;
+            padding: 40px;
+        }
+
+        .loading-spinner {
+            display: inline-block;
+            width: 60px;
+            height: 60px;
+            border: 6px solid rgba(251, 191, 36, 0.3);
+            border-top-color: #92400e;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 20px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .loading-text {
+            font-size: 1.125rem;
+            color: #92400e;
+            margin-bottom: 8px;
+        }
+
+        .loading-subtext {
+            font-size: 0.875rem;
+            color: #b45309;
+        }
+
+        .loading-dots::after {
+            content: '';
+            animation: dots 1.5s steps(4, end) infinite;
+        }
+
+        @keyframes dots {
+            0%, 20% { content: ''; }
+            40% { content: '.'; }
+            60% { content: '..'; }
+            80%, 100% { content: '...'; }
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 60px;
+            color: #92400e;
+            font-size: 0.875rem;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2.5rem;
+            }
+            
+            .subtitle {
+                font-size: 1.125rem;
+            }
+            
+            .card {
+                padding: 24px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-pattern"></div>
+    <div class="border-top"></div>
+    <div class="border-bottom"></div>
+
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <svg class="icon-sparkle" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/>
+            </svg>
+            <h1>ΟΡΑCULUM</h1>
+            <p class="subtitle">Ancient Wisdom Meets Modern Intelligence</p>
+            <p class="tagline">⚡ Powered by the Gods ⚡</p>
+        </div>
+
+        <div class="main-content">
+            <!-- Text Input Section -->
+            <div class="card">
+                <div class="card-header">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 6h18M3 12h18M3 18h18"/>
+                    </svg>
+                    <h2 class="card-title">Inscribe Your Query</h2>
+                </div>
+                <textarea id="textInput" placeholder="Speak your wisdom here, mortal..."></textarea>
+                <div class="char-count"><span id="charCount">0</span> characters inscribed</div>
+            </div>
+
+            <!-- Image Upload Section -->
+            <div class="card">
+                <div class="card-header">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                    </svg>
+                    <h2 class="card-title">Sacred Scrolls & Images</h2>
+                </div>
+
+                <div id="dropZone" class="drop-zone">
+                    <svg class="upload-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
+                    </svg>
+                    <p class="drop-text" id="dropText">Drag & Drop Images Here</p>
+                    <p class="drop-subtext">or</p>
+                    <label for="fileInput" class="btn-upload">Choose Sacred Images</label>
+                    <input type="file" id="fileInput" class="file-input" multiple accept="image/*">
+                </div>
+
+                <div id="imageGrid" class="image-grid hidden">
+                    <h3 class="image-grid-title">Uploaded Artifacts (<span id="imageCount">0</span>)</h3>
+                    <div id="gridContainer" class="grid"></div>
+                </div>
+            </div>
+
+            <!-- Submit Button -->
+            <div class="submit-section">
+                <button class="btn-submit">
+                    <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/>
+                    </svg>
+                    Consult the Oracle
+                    <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/>
+                    </svg>
+                </button>
+            </div>
+        </div>
+
+        <!-- Response Section -->
+        <div class="card response-card" id="responseCard" style="display:none;">
+            <div class="response-header">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
+                </svg>
+                <h2 class="response-title">Oracle's Wisdom</h2>
+            </div>
+            <div id="loadingContainer" class="loading-container" style="display:none;">
+                <div class="loading-spinner"></div>
+                <p class="loading-text loading-dots">Consulting the Oracle</p>
+                <p class="loading-subtext">The gods are contemplating your question</p>
+            </div>
+            <div id="responseContent" class="response-content" style="display:none;"></div>
+        </div>
+
+
+        <!-- Footer -->
+        <div class="footer">
+            <p>⚔️ Blessed by Athena • Powered by Apollo • Guarded by Zeus ⚔️</p>
+        </div>
+    </div>
+
+    <script>
+let images = [];
+
+const textInput   = document.getElementById('textInput');
+const charCount   = document.getElementById('charCount');
+const dropZone    = document.getElementById('dropZone');
+const dropText    = document.getElementById('dropText');
+const fileInput   = document.getElementById('fileInput');
+const imageGrid   = document.getElementById('imageGrid');
+const gridContainer = document.getElementById('gridContainer');
+const imageCount  = document.getElementById('imageCount');
+const submitBtn   = document.querySelector('.btn-submit');
+
+const responseCard = document.getElementById('responseCard');
+const loadingContainer = document.getElementById('loadingContainer');
+const responseContent = document.getElementById('responseContent');
+
+/* =====================
+   SUBMIT
+===================== */
+submitBtn.addEventListener('click', async () => {
+
+    const text = textInput.value.trim();
+
+    if (!text && images.length === 0) {
+        alert('Please enter text or upload an image');
+        return;
+    }
+
+    submitBtn.disabled = true;
+    
+    // Show loading state
+    responseCard.style.display = 'block';
+    loadingContainer.style.display = 'block';
+    responseContent.style.display = 'none';
+
+    const payload = {
+        text,
+        images: images.map(img => ({
+            name: img.name,
+            data: img.url
+        }))
+    };
+
+    try {
+        const res = await fetch('http://localhost:4000/consult', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+
+        if (!res.ok) {
+            throw new Error(`HTTP ${res.status}`);
+        }
+
+        const result = await res.json();
+
+        // Hide loading, show response
+        loadingContainer.style.display = 'none';
+        responseContent.style.display = 'block';
+        responseContent.textContent = result.answer || '[No response from Gemini]';
+
+    } catch (err) {
+        console.error('[UI] Error:', err);
+        loadingContainer.style.display = 'none';
+        responseContent.style.display = 'block';
+        responseContent.textContent = '❌ Failed to contact Oracle\n\n' + err.message;
+    } finally {
+        submitBtn.disabled = false;
+    }
+});
+
+/* =====================
+   TEXT INPUT
+===================== */
+textInput.addEventListener('input', () => {
+    charCount.textContent = textInput.value.length;
+});
+
+/* =====================
+   DRAG & DROP
+===================== */
+dropZone.addEventListener('dragover', e => {
+    e.preventDefault();
+    dropZone.classList.add('dragging');
+    dropText.textContent = 'Release to Upload';
+});
+
+dropZone.addEventListener('dragleave', e => {
+    e.preventDefault();
+    dropZone.classList.remove('dragging');
+    dropText.textContent = 'Drag & Drop Images Here';
+});
+
+dropZone.addEventListener('drop', e => {
+    e.preventDefault();
+    dropZone.classList.remove('dragging');
+    dropText.textContent = 'Drag & Drop Images Here';
+    handleFiles([...e.dataTransfer.files]);
+});
+
+fileInput.addEventListener('change', e => {
+    handleFiles([...e.target.files]);
+    fileInput.value = '';
+});
+
+function handleFiles(files) {
+    files.filter(f => f.type.startsWith('image/')).forEach(file => {
+        const reader = new FileReader();
+        reader.onload = e => {
+            images.push({
+                id: Date.now() + Math.random(),
+                name: file.name,
+                url: e.target.result
+            });
+            renderImages();
+        };
+        reader.readAsDataURL(file);
+    });
+}
+
+function removeImage(id) {
+    images = images.filter(img => img.id !== id);
+    renderImages();
+}
+
+function renderImages() {
+    if (!images.length) {
+        imageGrid.classList.add('hidden');
+        return;
+    }
+
+    imageGrid.classList.remove('hidden');
+    imageCount.textContent = images.length;
+
+    gridContainer.innerHTML = images.map(img => `
+        <div class="image-item">
+            <img src="${img.url}">
+            <button class="image-remove" onclick="removeImage(${img.id})">✕</button>
+            <div class="image-name">${img.name}</div>
+        </div>
+    `).join('');
+}
+</script>
+
+
+</body>
+</html>
